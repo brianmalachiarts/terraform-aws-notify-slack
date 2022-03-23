@@ -52,6 +52,8 @@ def decrypt_url(encrypted_url: str) -> str:
 def get_service_url(region: str, service: str) -> str:
     """Get the appropriate service URL for the region
 
+    https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/organization-cloudtrail-logs/log-events$3FfilterPattern$3DAccessDenied
+
     :param region: name of the AWS region
     :param service: name of the AWS service
     :returns: AWS console url formatted for the region and service provided
@@ -82,6 +84,10 @@ def format_cloudwatch_alarm(message: Dict[str, Any], region: str) -> Dict[str, A
     :params message: SNS message body containing CloudWatch alarm event
     :region: AWS region where the event originated from
     :returns: formatted Slack message payload
+
+    For Slack attachment formatting:
+    https://api.slack.com/reference/messaging/attachments
+    https://api.slack.com/reference/surfaces/formatting
     """
 
     cloudwatch_url = get_service_url(region=region, service="cloudwatch")
@@ -89,36 +95,12 @@ def format_cloudwatch_alarm(message: Dict[str, Any], region: str) -> Dict[str, A
 
     return {
         "color": CloudWatchAlarmState[message["NewStateValue"]].value,
+        "mrkdwn_in": ["footer"],
+        "title": f"{alarm_name}",
+        "title_link": f"{cloudwatch_url}#alarm:alarmFilter=ANY;name={urllib.parse.quote(alarm_name)}",
+        "text": f"{message['AlarmDescription']}",
+        "footer": f"<{cloudwatch_url}#logsV2:log-groups/log-group/organization-cloudtrail-logs/log-events|jump to Org CloudTrail logs>""
         "fallback": f"Alarm {alarm_name} triggered",
-        "fields": [
-            {"title": "Alarm Name", "value": f"`{alarm_name}`", "short": True},
-            {
-                "title": "Alarm Description",
-                "value": f"`{message['AlarmDescription']}`",
-                "short": False,
-            },
-            {
-                "title": "Alarm reason",
-                "value": f"`{message['NewStateReason']}`",
-                "short": False,
-            },
-            {
-                "title": "Old State",
-                "value": f"`{message['OldStateValue']}`",
-                "short": True,
-            },
-            {
-                "title": "Current State",
-                "value": f"`{message['NewStateValue']}`",
-                "short": True,
-            },
-            {
-                "title": "Link to Alarm",
-                "value": f"{cloudwatch_url}#alarm:alarmFilter=ANY;name={urllib.parse.quote(alarm_name)}",
-                "short": False,
-            },
-        ],
-        "text": f"AWS CloudWatch notification - {message['AlarmName']}",
     }
 
 
