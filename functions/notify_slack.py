@@ -99,7 +99,7 @@ def format_cloudwatch_alarm(message: Dict[str, Any], region: str) -> Dict[str, A
         "title": f"{alarm_name}",
         "title_link": f"{cloudwatch_url}#alarm:alarmFilter=ANY;name={urllib.parse.quote(alarm_name)}",
         "text": f"{message['AlarmDescription']}",
-        "footer": f"<{cloudwatch_url}#logsV2:log-groups/log-group/organization-cloudtrail-logs/log-events|jump to Org CloudTrail logs>""
+        "footer": f"<{cloudwatch_url}#logsV2:log-groups/log-group/organization-cloudtrail-logs/log-events|jump to Org CloudTrail logs>",
         "fallback": f"Alarm {alarm_name} triggered",
     }
 
